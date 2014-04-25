@@ -2,7 +2,7 @@
 #include<stdbool.h>
 #include<string.h>
 #include<curses.h>
-#define DIM 8
+#define BS 8
 struct player
 {
 	char name[32];
@@ -32,13 +32,13 @@ void quit()
 	endwin();
 }
 
-void countScore(char token, char board[8][8], int *score)
+void countScore(char token, char board[BS][BS], int *score)
 {
 	int loopXVar, loopYVar;
 	int count = 0;
-	for (loopXVar = 0; loopXVar < 8; loopXVar++)
+	for (loopXVar = 0; loopXVar < BS; loopXVar++)
 	{
-		for (loopYVar = 0; loopYVar < 8; loopYVar++)
+		for (loopYVar = 0; loopYVar < BS; loopYVar++)
 		{
 			if (board[loopXVar][loopYVar] == token)
 			{
@@ -49,7 +49,7 @@ void countScore(char token, char board[8][8], int *score)
 	*score = count;
 }
 
-void drawBoard(char board[8][8], struct player player1, struct player player2, char (*gameMessage)[64])
+void drawBoard(char board[BS][BS], struct player player1, struct player player2, char (*gameMessage)[64])
 {
 	//Draw the board received each time using proper formatting
 	int loopXVar, loopYVar;
@@ -70,11 +70,11 @@ void drawBoard(char board[8][8], struct player player1, struct player player2, c
 	
 	printw("\n%s\t :\t%i", player1.name, player1.score);
 	printw("\n%s\t :\t%i\n", player2.name, player2.score);
-	for (loopXVar = 0; loopXVar < 8; loopXVar++)
+	for (loopXVar = 0; loopXVar < BS; loopXVar++)
 	{
-		for (loopYVar = 0; loopYVar < 8; loopYVar++)
+		for (loopYVar = 0; loopYVar < BS; loopYVar++)
 		{
-			printw("|\t%c\t", board[loopXVar][loopYVar]);
+			printw("|%c", board[loopXVar][loopYVar]);
 		}
 		printw("|");
 		printw("\n");
@@ -82,16 +82,110 @@ void drawBoard(char board[8][8], struct player player1, struct player player2, c
 	refresh();
 }
 
-void changeBoard(char board[8][8])
+void changeBoard(char board[BS][BS], char token, int location[2])
 {
+	int hasCount;
+	int count = 0;
+	int x, y;
+	int xx, yy;
+	//Right
+	hasCount = 0;
+	for (y = location[1]; y < 8; y++)
+	{
+		if (board[location[0]][y] == ' ')
+		{
+			break;
+		}
+		else if (board[location[0]][y] == token)
+		{
+			for (yy = location[1]; yy < y; yy++)
+			{
+				board[location[0]][yy] = token;
+				count++;
+				hasCount++;
+			}
+			
+			if (hasCount > 0)
+			{
+				break;
+			}
+			//break; Unsure why this wouldn't work
+		}
+	}
+	//Left
+	hasCount = 0;
+	for (y = location[1]; y > 0; y--)
+	{
+		if (board[location[0]][y] == ' ')
+		{
+			break;
+		}
+		else if (board[location[0]][y] == token)
+		{
+			for (yy = location[1]; yy > y; yy--)
+			{
+				board[location[0]][yy] = token;
+				count++;
+				hasCount++;
+			}
+			if (hasCount > 0)
+			{
+				break;
+			}
+		}
+	}
+	//Down
+	hasCount = 0;
+	for (x = location[0]; x < 8; x++)
+	{
+		if (board[x][location[1]] == ' ')
+		{
+			break;
+		}
+		else if (board[x][location[1]] == token)
+		{
+			for (xx = location[0]; xx < x; xx++)
+			{
+				board[xx][location[1]] = token;
+				count++;
+				hasCount++;
+			}
+			if (hasCount > 0)
+			{
+				break;
+			}
+		}
+	}
+	//Up
+	hasCount = 0;
+	for (x = location[0]; x > 0; x--)
+	{
+		if (board[x][location[1]] == ' ')
+		{
+			break;
+		}
+		else if (board[x][location[1]] == token)
+		{
+			for (xx = location[0]; xx > x; xx--)
+			{
+				board[xx][location[1]] = token;
+				count++;
+				hasCount++;
+			}
+			if (hasCount > 0)
+			{
+				break;
+			}
+		}
+	}
 }
 
 struct player playGame()
 {
 	//Actual game function, returns winner
 	//Boards
-	char actualBoard[8][8];
-	char playBoard[8][8];
+	char actualBoard[BS][BS];
+	char playBoard[BS][BS];
 	//Stats
 	//Game message to display
 	char gameMessage[64];
@@ -125,8 +219,8 @@ struct player playGame()
 	refresh();
 	getstr(player2.name);
 	//Initial board
-	for (loopXVar = 0; loopXVar < 8; loopXVar++)
-		for (loopYVar = 0; loopYVar < 8; loopYVar++)
+	for (loopXVar = 0; loopXVar < BS; loopXVar++)
+		for (loopYVar = 0; loopYVar < BS; loopYVar++)
 			playBoard[loopXVar][loopYVar] = ' ';
 	playBoard[3][4] = player1.token;
 	playBoard[4][3] = player1.token;
@@ -154,6 +248,8 @@ struct player playGame()
 			currentPlayer = player2;
 		}
 		playLoop = true;
+		countScore(player1.token, actualBoard, &player1.score);
+		countScore(player2.token, actualBoard, &player2.score);
 		while (playLoop)
 		{
 			memcpy(playBoard, actualBoard, sizeof playBoard);
@@ -185,25 +281,31 @@ struct player playGame()
 				else
 				{
 					actualBoard[currentPlayer.location[0]][currentPlayer.location[1]] = currentPlayer.token;
-					countScore(currentPlayer.token, actualBoard, &currentPlayer.score);	
+					changeBoard(actualBoard, currentPlayer.token, currentPlayer.location);
 					playLoop = false;
+					switch (playerTurn)
+					{
+						case 1:
+							player1 = currentPlayer;
+							break;
+						case 2:
+							player2 = currentPlayer;
+							break;
+						default:
+							break;
+					}
 				}
+			}
+			else if (playerInput == 'Q')
+			{
+				playLoop=false;
+				gameLoop=false;
 			}
 			else
 			{
 				strcpy(gameMessage, "Invalid move!");
 			}
-			switch (playerTurn)
-			{
-				case 1:
-					player1 = currentPlayer;
-					break;
-				case 2:
-					player2 = currentPlayer;
-					break;
-				default:
-					break;
-			}
+			
 		}
 	}
 	return currentPlayer;
