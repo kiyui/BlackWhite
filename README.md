@@ -1,4 +1,6 @@
-BlackWhite
-==========
-
-A simple reversi game in C for my assignment.
+/**BlackWhite
+ * Timothy Kiyui
+ * 4316886
+ * Description:
+ * A simple game of Black White in C
+ **/
