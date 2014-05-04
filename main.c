@@ -1,3 +1,8 @@
+/*
+ * Testing
+ * Will no longer use a pointer to array.
+ * 
+ */
 #include<stdio.h>
 #include<stdbool.h>
 #include<string.h>
