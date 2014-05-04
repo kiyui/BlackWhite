@@ -1,14 +1,8 @@
-/*
- * Testing
- * Will no longer use a pointer to array.
- * 
- */
 #include<stdio.h>
 #include<stdbool.h>
 #include<string.h>
 #include<curses.h>
 #define BS 8
-char lastOutput;
 struct player
 {
 	char name[32];
@@ -93,8 +87,7 @@ void drawBoard(char userBoard[BS][BS], struct player player1, struct player play
 		printw("|");
 		printw("\n");
 	}
-	printw("\nw: Up\ts: Down\na: Left\td: Right\nx: Confirm\nQ: Quit\n");
-	printw("%s", lastOutput);
+	printw("\nw: Up\ts: Down\na: Left\td: Right\nx: Confirm\tc: Skip\nQ: Quit\n");
 	refresh();
 }
 
@@ -237,7 +230,6 @@ int changeBoard(char actualBoard[BS][BS], char playerToken, int location[2])
 			}
 			if (hasCount > 0)
 			{
-				strcpy(lastOutput, "DLD");
 				count--;
 				continueLoop = false;
 			}
@@ -277,7 +269,6 @@ int changeBoard(char actualBoard[BS][BS], char playerToken, int location[2])
 			}
 			if (hasCount > 0)
 			{
-				strcpy(lastOutput, "DRU");
 				count--;
 				continueLoop = false;
 			}
@@ -317,7 +308,6 @@ int changeBoard(char actualBoard[BS][BS], char playerToken, int location[2])
 			}
 			if (hasCount > 0)
 			{
-				strcpy(lastOutput, "DLD");
 				count--;
 				continueLoop = false;
 			}
@@ -357,7 +347,6 @@ int changeBoard(char actualBoard[BS][BS], char playerToken, int location[2])
 			}
 			if (hasCount > 0)
 			{
-				strcpy(lastOutput, "DLU");
 				count--;
 				continueLoop = false;
 			}
@@ -437,6 +426,8 @@ struct player playGame()
 		if ((player1.score + player2.score) == (BS*BS))
 		{
 			gameLoop = false;
+			printw("\nGame over!\nPress any key to continue.\n");
+			getch();
 		}
 		else
 		{
@@ -464,6 +455,20 @@ struct player playGame()
 			else if (playerInput == 's' && currentPlayer.location[0] < 7)
 			{
 				currentPlayer.location[0]++;
+			}
+			else if (playerInput == 'c')
+			{
+				switch (playerTurn)
+				{
+					case 1:
+						player1 = currentPlayer;
+						break;
+					case 2:
+						player2 = currentPlayer;
+						break;
+					default:
+						break;
+				}
 			}
 			else if (playerInput == 'x')
 			{
@@ -546,7 +551,6 @@ int main()
 	gameLoop = true;
 	initscr();
 	clrscr();
-	strcpy(lastOutput, "START");
 	while (gameLoop)
 	{
 		printw("Black White");
@@ -559,11 +563,11 @@ int main()
 			winner = playGame();
 			if (winner.score == 404)
 			{
-				sprintf(gameMessage, "\nGame tied!");
+				sprintf(gameMessage, "\nGame tied!\n");
 			}
 			else
 			{
-				sprintf(gameMessage, "\nPlayer %s wins!\n", winner.name);
+				sprintf(gameMessage, "\nPlayer %s wins with a score of %i!\n", winner.name, winner.score);
 			}
 		}
 		else if (userOption == 'q' || userOption == 'Q')
