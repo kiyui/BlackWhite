@@ -97,6 +97,7 @@ int changeBoard(char actualBoard[BS][BS], char playerToken, int location[2])
 	//Right
 	hasCount = 0;
 	//Diagonal specific
+	bool continueLoop = false;
 	int diagonalMovement = 0;
 	int diagonalLoop = 0;
 	memcpy(userBoard, actualBoard, sizeof userBoard);
