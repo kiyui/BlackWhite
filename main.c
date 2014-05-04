@@ -8,6 +8,7 @@
 #include<string.h>
 #include<curses.h>
 #define BS 8
+char lastOutput[32];
 struct player
 {
 	char name[32];
@@ -54,7 +55,7 @@ void countScore(char playerToken, char userBoard[BS][BS], int *userScore)
 	*userScore = countScore;
 }
 
-void drawBoard(char userBoard[BS][BS], struct player player1, struct player player2, char (*gameMessage)[64])
+void drawBoard(char userBoard[BS][BS], struct player player1, struct player player2, char (*gameMessage)[64], int *countFlip)
 {
 	//Draw the board received each time using proper formatting
 	int loopXVar, loopYVar;
@@ -74,7 +75,15 @@ void drawBoard(char userBoard[BS][BS], struct player player1, struct player play
 	}
 	//Prints player stats
 	printw("\n%s\t :\t%i", player1.name, player1.score);
-	printw("\n%s\t :\t%i\n", player2.name, player2.score);
+	printw("\n%s\t :\t%i", player2.name, player2.score);
+	if (*countFlip != 1)
+	{
+		printw("\n%i flips made.\n", *countFlip);
+	}
+	else
+	{
+		printw("\n%i flip made.\n", *countFlip);
+	}
 	for (loopXVar = 0; loopXVar < BS; loopXVar++)
 	{
 		for (loopYVar = 0; loopYVar < BS; loopYVar++)
@@ -85,12 +94,12 @@ void drawBoard(char userBoard[BS][BS], struct player player1, struct player play
 		printw("\n");
 	}
 	printw("\nw: Up\ts: Down\na: Left\td: Right\nx: Confirm\nQ: Quit\n");
+	printw("%s", lastOutput);
 	refresh();
 }
 
 int changeBoard(char actualBoard[BS][BS], char playerToken, int location[2])
 {
-	char userBoard[BS][BS];
 	//Determines if a loop has already made a flip
 	int hasCount;
 	//Flips made
@@ -105,18 +114,18 @@ int changeBoard(char actualBoard[BS][BS], char playerToken, int location[2])
 	bool continueLoop = false;
 	int diagonalMovement = 0;
 	int diagonalLoop = 0;
-	memcpy(userBoard, actualBoard, sizeof userBoard);
+	//Right
 	for (y = location[1]; y < 8; y++)
 	{
-		if (userBoard[location[0]][y] == ' ')
+		if (actualBoard[location[0]][y] == ' ')
 		{
 			break;
 		}
-		else if (userBoard[location[0]][y] == playerToken)
+		else if (actualBoard[location[0]][y] == playerToken)
 		{
 			for (yy = location[1]; yy < y; yy++)
 			{
-				userBoard[location[0]][yy] = playerToken;
+				actualBoard[location[0]][yy] = playerToken;
 				count++;
 				hasCount++;
 			}
@@ -130,17 +139,17 @@ int changeBoard(char actualBoard[BS][BS], char playerToken, int location[2])
 	}
 	//Left
 	hasCount = 0;
-	for (y = location[1]; y > 0; y--)
+	for (y = location[1]; y >= 0; y--)
 	{
-		if (userBoard[location[0]][y] == ' ')
+		if (actualBoard[location[0]][y] == ' ')
 		{
 			break;
 		}
-		else if (userBoard[location[0]][y] == playerToken)
+		else if (actualBoard[location[0]][y] == playerToken)
 		{
 			for (yy = location[1]; yy > y; yy--)
 			{
-				userBoard[location[0]][yy] = playerToken;
+				actualBoard[location[0]][yy] = playerToken;
 				count++;
 				hasCount++;
 			}
@@ -155,15 +164,15 @@ int changeBoard(char actualBoard[BS][BS], char playerToken, int location[2])
 	hasCount = 0;
 	for (x = location[0]; x < 8; x++)
 	{
-		if (userBoard[x][location[1]] == ' ')
+		if (actualBoard[x][location[1]] == ' ')
 		{
 			break;
 		}
-		else if (userBoard[x][location[1]] == playerToken)
+		else if (actualBoard[x][location[1]] == playerToken)
 		{
 			for (xx = location[0]; xx < x; xx++)
 			{
-				userBoard[xx][location[1]] = playerToken;
+				actualBoard[xx][location[1]] = playerToken;
 				count++;
 				hasCount++;
 			}
@@ -176,17 +185,17 @@ int changeBoard(char actualBoard[BS][BS], char playerToken, int location[2])
 	}
 	//Up
 	hasCount = 0;
-	for (x = location[0]; x > 0; x--)
+	for (x = location[0]; x >= 0; x--)
 	{
-		if (userBoard[x][location[1]] == ' ')
+		if (actualBoard[x][location[1]] == ' ')
 		{
 			break;
 		}
-		else if (userBoard[x][location[1]] == playerToken)
+		else if (actualBoard[x][location[1]] == playerToken)
 		{
 			for (xx = location[0]; xx > x; xx--)
 			{
-				userBoard[xx][location[1]] = playerToken;
+				actualBoard[xx][location[1]] = playerToken;
 				count++;
 				hasCount++;
 			}
@@ -206,24 +215,29 @@ int changeBoard(char actualBoard[BS][BS], char playerToken, int location[2])
 	y = location[1];
 	while (continueLoop)
 	{
-		if (location[0] + diagonalMovement >= 8 && location[1] + diagonalMovement >= 8)
+		if (location[0] + diagonalMovement < 8)		
+			x = location[0] + diagonalMovement;
+		else
 			break;
-		x = location[0] + diagonalMovement;
-		y = location[1] + diagonalMovement;		
-		if (userBoard[x][y] == ' ')
+		if (location[1] + diagonalMovement < 8)
+			y = location[1] + diagonalMovement;
+		else
+			break;
+		if (actualBoard[x][y] == ' ')
 		{
 			continueLoop = false;
 		}
-		else if (userBoard[x][y] == playerToken)
+		else if (actualBoard[x][y] == playerToken)
 		{
 			for (diagonalLoop = 0; diagonalLoop < diagonalMovement; diagonalLoop++)
 			{
-				userBoard[location[0] + diagonalLoop][location[1] + diagonalLoop] = playerToken;
+				actualBoard[location[0] + diagonalLoop][location[1] + diagonalLoop] = playerToken;
 				count++;
 				hasCount++;
 			}
 			if (hasCount > 0)
 			{
+				strcpy(lastOutput, "DLD");
 				count--;
 				continueLoop = false;
 			}
@@ -241,24 +255,29 @@ int changeBoard(char actualBoard[BS][BS], char playerToken, int location[2])
 	y = location[1];
 	while (continueLoop)
 	{
-		if (location[0] - diagonalMovement < 0 && location[1] + diagonalMovement >= 8)
+		if (location[0] - diagonalMovement >= 0)
+			x = location[0] - diagonalMovement;
+		else
 			break;
-		x = location[0] - diagonalMovement;
-		y = location[1] + diagonalMovement;
-		if (userBoard[x][y] == ' ')
+		if (location[1] + diagonalMovement < 8)
+			y = location[1] + diagonalMovement;
+		else
+			break;
+		if (actualBoard[x][y] == ' ')
 		{
 			continueLoop = false;
 		}
-		else if (userBoard[x][y] == playerToken)
+		else if (actualBoard[x][y] == playerToken)
 		{
 			for (diagonalLoop = 0; diagonalLoop < diagonalMovement; diagonalLoop++)
 			{
-				userBoard[location[0] - diagonalLoop][location[1] + diagonalLoop] = playerToken;
+				actualBoard[location[0] - diagonalLoop][location[1] + diagonalLoop] = playerToken;
 				count++;
 				hasCount++;
 			}
 			if (hasCount > 0)
 			{
+				strcpy(lastOutput, "DRU");
 				count--;
 				continueLoop = false;
 			}
@@ -276,24 +295,29 @@ int changeBoard(char actualBoard[BS][BS], char playerToken, int location[2])
 	y = location[1];
 	while (continueLoop)
 	{
-		if (location[0] + diagonalMovement >= 8 && location[1] - diagonalMovement < 0)
+		if (location[0] + diagonalMovement < 8)
+			x = location[0] + diagonalMovement;
+		else
 			break;
-		x = location[0] + diagonalMovement;
-		y = location[1] - diagonalMovement;
-		if (userBoard[x][y] == ' ')
+		if (location[1] - diagonalMovement >= 0)
+			y = location[1] - diagonalMovement;
+		else
+			break;
+		if (actualBoard[x][y] == ' ')
 		{
 			continueLoop = false;
 		}
-		else if (userBoard[x][y] == playerToken)
+		else if (actualBoard[x][y] == playerToken)
 		{
 			for (diagonalLoop = 0; diagonalLoop < diagonalMovement; diagonalLoop++)
 			{
-				userBoard[location[0] + diagonalLoop][location[1] - diagonalLoop] = playerToken;
+				actualBoard[location[0] + diagonalLoop][location[1] - diagonalLoop] = playerToken;
 				count++;
 				hasCount++;
 			}
 			if (hasCount > 0)
 			{
+				strcpy(lastOutput, "DLD");
 				count--;
 				continueLoop = false;
 			}
@@ -311,24 +335,29 @@ int changeBoard(char actualBoard[BS][BS], char playerToken, int location[2])
 	y = location[1];
 	while (continueLoop)
 	{
-		if (location[0] - diagonalMovement < 0 && location[1] - diagonalMovement < 0)
+		if (location[0] - diagonalMovement >= 0)
+			x = location[0] - diagonalMovement;
+		else
 			break;
-		x = location[0] - diagonalMovement;
-		y = location[1] - diagonalMovement;
-		if (userBoard[x][y] == ' ')
+		if (location[1] - diagonalMovement >= 0)
+			y = location[1] - diagonalMovement;
+		else
+			break;
+		if (actualBoard[x][y] == ' ')
 		{
 			continueLoop = false;
 		}
-		else if (userBoard[x][y] == playerToken)
+		else if (actualBoard[x][y] == playerToken)
 		{
 			for (diagonalLoop = 0; diagonalLoop < diagonalMovement; diagonalLoop++)
 			{
-				userBoard[location[0] - diagonalLoop][location[1] - diagonalLoop] = playerToken;
+				actualBoard[location[0] - diagonalLoop][location[1] - diagonalLoop] = playerToken;
 				count++;
 				hasCount++;
 			}
 			if (hasCount > 0)
 			{
+				strcpy(lastOutput, "DLU");
 				count--;
 				continueLoop = false;
 			}
@@ -341,12 +370,6 @@ int changeBoard(char actualBoard[BS][BS], char playerToken, int location[2])
 	
 	//We only make changes to the original board if there actually were changes made
 	//count = 100;
-	if (count > 0)
-	{
-		for (x = 0; x < BS; x++)
-			for (y = 0; y < BS; y++)
-				actualBoard[x][y] = userBoard[x][y];
-	}
 	return count;
 }
 
@@ -361,7 +384,7 @@ struct player playGame()
 	//Player input for in-game
 	char playerInput;
 	//Determines if a player can set the character
-	int countFlip;
+	int countFlip = 0;
 	//Loops
 	bool gameLoop = true, playLoop = true;
 	int loopXVar, loopYVar;
@@ -371,7 +394,7 @@ struct player playGame()
 	struct player player2;
 	struct player currentPlayer;
 	player1.token = '@';
-    player2.token = 'O';
+    	player2.token = 'O';
 	player1.score = 0;
 	player2.score = 0;
 	player1.location[0] = 0;
@@ -393,7 +416,7 @@ struct player playGame()
 	playBoard[4][3] = player1.token;
 	playBoard[3][3] = player2.token;
 	playBoard[4][4] = player2.token;
-	memcpy(actualBoard, playBoard, sizeof actualBoard);
+	memcpy(actualBoard, playBoard, sizeof (char) * BS * BS);
 	currentPlayer = player2;
 	while (gameLoop) //Main game loop, only exits once game is over
 	{
@@ -421,9 +444,9 @@ struct player playGame()
 		}
 		while (playLoop) //Playing game loop, only exits once a player has set a token
 		{
-			memcpy(playBoard, actualBoard, sizeof playBoard);
+			memcpy(playBoard, actualBoard, sizeof (char) * BS * BS);
 			playBoard[currentPlayer.location[0]][currentPlayer.location[1]] = 'X';
-			drawBoard(playBoard, player1, player2, &gameMessage);
+			drawBoard(playBoard, player1, player2, &gameMessage, &countFlip);
 			//Player input
 			playerInput = getch();
 			if (playerInput == 'w' && currentPlayer.location[0] > 0)
@@ -458,12 +481,12 @@ struct player playGame()
 					if (countFlip < 1)
 					{
 						strcpy(gameMessage, "Cannot set token here!");
-						memcpy(playBoard, actualBoard, sizeof playBoard);
+						memcpy(playBoard, actualBoard, sizeof (char) * BS * BS);
 					}
 					else
 					{
 						playLoop = false;
-						memcpy(actualBoard, playBoard, sizeof actualBoard);
+						memcpy(actualBoard, playBoard, sizeof (char) * BS * BS);
 						//After the user makes a flip, the game changes players
 						switch (playerTurn)
 						{
@@ -523,6 +546,7 @@ int main()
 	gameLoop = true;
 	initscr();
 	clrscr();
+	strcpy(lastOutput, "START");
 	while (gameLoop)
 	{
 		printw("Black White");
@@ -557,4 +581,3 @@ int main()
 	}
 	return 0; //returns 0
 }
-
