@@ -337,7 +337,7 @@ int changeBoard(char actualBoard[BS][BS], char playerToken, int location[2])
 	}
 	
 	//We only make changes to the original board if there actually were changes made
-	//count = 100;
+	count = 100;
 	if (count > 0)
 	{
 		for (x = 0; x < BS; x++)
