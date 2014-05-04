@@ -86,7 +86,7 @@ void drawBoard(char userBoard[BS][BS], struct player player1, struct player play
 int changeBoard(char actualBoard[BS][BS], char playerToken, int location[2])
 {
 	char userBoard[BS][BS];
-	memcpy(userBoard, actualBoard, sizeof userBoard);
+	//memcpy(userBoard, actualBoard, sizeof userBoard);
 	//Determines if a loop has already made a flip
 	int hasCount;
 	//Flips made
@@ -101,8 +101,11 @@ int changeBoard(char actualBoard[BS][BS], char playerToken, int location[2])
 	//Movement
 	int diagonalMovement = 0;
 	int diagonalLoop = 0;
-	//Continue bool, to avoid a goto
 	bool continueLoop = false;
+	for (x = 0; x < BS; x++)
+			for (y = 0; y < BS; y++)
+				userBoard[x][y] = actualBoard[x][y];
+	
 	for (y = location[1]; y < 8; y++)
 	{
 		if (userBoard[location[0]][y] == ' ')
@@ -337,16 +340,12 @@ int changeBoard(char actualBoard[BS][BS], char playerToken, int location[2])
 	}
 	
 	//We only make changes to the original board if there actually were changes made
-	count = 100;
+	//count = 100;
 	if (count > 0)
 	{
 		for (x = 0; x < BS; x++)
-		{
 			for (y = 0; y < BS; y++)
-			{
 				actualBoard[x][y] = userBoard[x][y];
-			}
-		}	
 	}
 	return count;
 }
