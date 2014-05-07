@@ -448,13 +448,14 @@ struct player playGame()
 	/*	Determines if a player can set the character*/
 	int countFlip = 0;
 	/*	Loops*/
-	bool gameLoop = true, playLoop = true;
+	bool gameLoop = true, playLoop = true, nameQuery = true;
 	/*	Players*/
 	int playerTurn = 2;
 	struct player player1;
 	struct player player2;
 	struct player currentPlayer;
 	struct availableMove returnOption;
+	struct availableMove playerPC;
 	player1.token = '@';
     player2.token = 'O';
 	player1.score = 0;
@@ -463,13 +464,16 @@ struct player playGame()
 	player1.location[1] = 0;
 	player2.location[0] = 0;
 	player2.location[1] = 0;
-	printw("\nPlease input player names:");
-	printw("\nPlayer 1 (@): ");
-	refresh();
-	getstr(player1.name);
-	printw("Player 2 (O): ");
-	refresh();
-	getstr(player2.name);
+	while (nameQuery)
+	{
+		printw("\nPlease input player names:");
+		printw("\nPlayer 1 (@): ");
+		refresh();
+		getstr(player1.name);
+		printw("Player 2 (O): ");
+		refresh();
+		getstr(player2.name);
+	}
 	/*	Initial board*/
 	clearBoard(playBoard);
 	playBoard[3][4] = player1.token;

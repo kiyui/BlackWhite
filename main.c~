@@ -405,13 +405,14 @@ struct availableMove availableOptions(char actualBoard[BS][BS], char playerToken
 	{
 		for (y = 0; y < BS; y++)
 		{
-			testBoard[x][y] = playerToken;
+			
 			memcpy(testBoard, actualBoard, sizeof (char) * BS * BS);
 			//printBoard(testBoard);
 			location[0] = x;
 			location[1] = y;
 			if (testBoard[location[0]][location[1]] == ' ')
 			{
+				testBoard[x][y] = playerToken;
 				currentCount = changeBoard(testBoard, playerToken, location);
 				if (currentCount > 0)
 				{
