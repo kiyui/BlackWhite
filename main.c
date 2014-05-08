@@ -1,15 +1,24 @@
 /*Now on AI branch, will allow the user to challenge a PC*/
 #include<stdio.h>
+#include<stdlib.h>
 #include<stdbool.h>
 #include<string.h>
 #include<curses.h>
+#include<time.h>
+#ifdef _WIN32
+	#include <windows.h>
+#else
+	#include <unistd.h>
+#endif
 #define BS 8
+bool autoSkip;
 struct player
 {
 	char name[32];
 	char token;
 	int score;
 	int location[2];
+	bool isPC;
 };
 
 struct availableMove
@@ -117,7 +126,10 @@ void drawBoard(char userBoard[BS][BS], struct player player1, struct player play
 		printw("|");
 		printw("\n");
 	}
-	printw("\nw: Up\ts: Down\na: Left\td: Right\nx: Confirm\nc: Skip\nQ: Quit\n");
+	if (autoSkip == false)
+		printw("\nw: Up\ts: Down\na: Left\td: Right\nx: Confirm\nc: Skip\nQ: Quit\n");
+	else
+		printw("\nw: Up\ts: Down\na: Left\td: Right\nx: Confirm\nQ: Quit\n");
 	refresh();
 }
 
@@ -442,11 +454,14 @@ struct player playGame()
 	char actualBoard[BS][BS];
 	char playBoard[BS][BS];
 	/*	Game message to display*/
+	char nameMessage[64];
 	char gameMessage[64];
 	/*	Player input for in-game*/
 	char playerInput;
 	/*	Determines if a player can set the character*/
 	int countFlip = 0;
+	/*	Random number for PC sleep*/
+	int sleepTime;
 	/*	Loops*/
 	bool gameLoop = true, playLoop = true, nameQuery = true;
 	/*	Players*/
@@ -464,45 +479,66 @@ struct player playGame()
 	player1.location[1] = 0;
 	player2.location[0] = 0;
 	player2.location[1] = 0;
+	strcpy(nameMessage, "Please input player names:");
 	while (nameQuery)
 	{
-		printw("\nPlease input player names:");
+		printw("\n%s", nameMessage);
 		printw("\nPlayer 1 (@): ");
 		refresh();
 		getstr(player1.name);
 		printw("Player 2 (O): ");
 		refresh();
 		getstr(player2.name);
+		if (!strcmp(player1.name, player2.name))
+		{
+			strcpy(nameMessage, "Players can't have the same names!");
+			if (!strcmp(player1.name, "PC"))
+			{
+				strcpy(nameMessage, "You cannot have a PC vs PC fight!");
+			}
+		}
+		else
+			nameQuery = false;
 	}
+	if (!strcmp(player1.name, "PC"))
+		player1.isPC = true;
+	else if (!strcmp(player2.name, "PC"))
+		player2.isPC = true;
 	/*	Initial board*/
 	clearBoard(playBoard);
 	playBoard[3][4] = player1.token;
 	playBoard[4][3] = player1.token;
 	playBoard[3][3] = player2.token;
 	playBoard[4][4] = player2.token;
+	currentPlayer = player2;
 	memcpy(actualBoard, playBoard, sizeof (char) * BS * BS);
 	currentPlayer = player2;
+	srand(time(NULL));
 	/*	Main game loop, only exits once game is over*/
 	while (gameLoop)
 	{
 		if (playerTurn == 2)
 		{
+			player2 = currentPlayer;
 			strcpy(gameMessage, "1");
 			playerTurn = 1;
 			currentPlayer = player1;
 		}
 		else
 		{
+			player1 = currentPlayer;
 			strcpy(gameMessage, "2");
 			playerTurn = 2;
 			currentPlayer = player2;
 		}
 		countScore(player1.token, actualBoard, &player1.score);
 		countScore(player2.token, actualBoard, &player2.score);
-		if ((player1.score + player2.score) == (BS*BS))
+		if ((player1.score + player2.score) == (BS*BS) || player1.score == 0 || player2.score == 0)
 		{
 			gameLoop = false;
+			drawBoard(playBoard, player1, player2, &gameMessage, &countFlip);
 			printw("\nGame over!\nPress any key to continue.\n");
+			refresh();
 			getch();
 		}
 		else
@@ -513,79 +549,111 @@ struct player playGame()
 		while (playLoop)
 		{
 			memcpy(playBoard, actualBoard, sizeof (char) * BS * BS);
-			playBoard[currentPlayer.location[0]][currentPlayer.location[1]] = 'X';
+			/*	PC does not need a cursor*/
+			if (currentPlayer.isPC == false)
+				playBoard[currentPlayer.location[0]][currentPlayer.location[1]] = 'X';
 			drawBoard(playBoard, player1, player2, &gameMessage, &countFlip);
-			/*	Player input*/
-			playerInput = getch();
-			if (playerInput == 'w' && currentPlayer.location[0] > 0)
+			if (currentPlayer.isPC == false)
 			{
-				currentPlayer.location[0]--;
-			}
-			else if (playerInput == 'a' && currentPlayer.location[1] > 0)
-			{
-				currentPlayer.location[1]--;
-			}
-			else if (playerInput == 'd' && currentPlayer.location[1] < 7)
-			{
-				currentPlayer.location[1]++;
-			}
-			else if (playerInput == 's' && currentPlayer.location[0] < 7)
-			{
-				currentPlayer.location[0]++;
-			}
-			else if (playerInput == 'c')
-			{
-				//Test if player can skip
-				playBoard[currentPlayer.location[0]][currentPlayer.location[1]] = ' ';
-				returnOption = availableOptions(playBoard, currentPlayer.token);
-				printw("\nScore:%i", returnOption.score);
-				printw("\nAvailable:%i", returnOption.available);
-				refresh();
-				getch();
-				if (returnOption.available > 0)
+				/*	Player is not PC*/
+				/*	Player input*/
+				playerInput = getch();
+				if (playerInput == 'w' && currentPlayer.location[0] > 0)
 				{
-					sprintf(gameMessage, "Player %s still has available moves!", currentPlayer.name);
-					playBoard[currentPlayer.location[0]][currentPlayer.location[1]] = currentPlayer.token;
+					currentPlayer.location[0]--;
 				}
-				else
-					playLoop = false;
-			}
-			else if (playerInput == 'x')
-			{
-				/*	Test if user is setting token on top of another token*/
-				if (actualBoard[currentPlayer.location[0]][currentPlayer.location[1]] == '@' || actualBoard[currentPlayer.location[0]][currentPlayer.location[1]] == 'O')
+				else if (playerInput == 'a' && currentPlayer.location[1] > 0)
 				{
-					strcpy(gameMessage, "Cannot set token here!");
+					currentPlayer.location[1]--;
 				}
-				else
+				else if (playerInput == 'd' && currentPlayer.location[1] < 7)
 				{
-					/*	Make changes to play board to test if the user made any flips*/
-					playBoard[currentPlayer.location[0]][currentPlayer.location[1]] = currentPlayer.token;
-					countFlip = changeBoard(playBoard, currentPlayer.token, currentPlayer.location);
-					/*	The user must have flips otherwise the move is considered invalid*/
-					if (countFlip < 1)
+					currentPlayer.location[1]++;
+				}
+				else if (playerInput == 's' && currentPlayer.location[0] < 7)
+				{
+					currentPlayer.location[0]++;
+				}
+				else if (playerInput == 'c')
+				{
+					/*	Test if player can skip*/
+					playBoard[currentPlayer.location[0]][currentPlayer.location[1]] = ' ';
+					returnOption = availableOptions(playBoard, currentPlayer.token);
+					/*	printw("\nScore:%i", returnOption.score);*/
+					/*	printw("\nAvailable:%i", returnOption.available);*/
+					/*	refresh();*/
+					/*	getch();*/
+					if (returnOption.available > 0)
+					{
+						sprintf(gameMessage, "Player %s still has available moves!", currentPlayer.name);
+						playBoard[currentPlayer.location[0]][currentPlayer.location[1]] = currentPlayer.token;
+					}
+					else
+						playLoop = false;
+				}
+				else if (playerInput == 'x')
+				{
+					/*	Test if user is setting token on top of another token*/
+					if (actualBoard[currentPlayer.location[0]][currentPlayer.location[1]] == '@' || actualBoard[currentPlayer.location[0]][currentPlayer.location[1]] == 'O')
 					{
 						strcpy(gameMessage, "Cannot set token here!");
-						memcpy(playBoard, actualBoard, sizeof (char) * BS * BS);
 					}
 					else
 					{
-						playLoop = false;
-						memcpy(actualBoard, playBoard, sizeof (char) * BS * BS);
+						/*	Make changes to play board to test if the user made any flips*/
+						playBoard[currentPlayer.location[0]][currentPlayer.location[1]] = currentPlayer.token;
+						countFlip = changeBoard(playBoard, currentPlayer.token, currentPlayer.location);
+						/*	The user must have flips otherwise the move is considered invalid*/
+						if (countFlip < 1)
+						{
+							strcpy(gameMessage, "Cannot set token here!");
+							memcpy(playBoard, actualBoard, sizeof (char) * BS * BS);
+						}
+						else
+						{
+							playLoop = false;
+							memcpy(actualBoard, playBoard, sizeof (char) * BS * BS);
+						}
 					}
 				}
-			}
-			else if (playerInput == 'Q')
-			{
-				/*	Force quits the game*/
-				playLoop=false;
-				gameLoop=false;
+				else if (playerInput == 'Q')
+				{
+					/*	Force quits the game*/
+					playLoop=false;
+					gameLoop=false;
+				}
+				else
+				{
+					strcpy(gameMessage, "Invalid move!");
+				}
 			}
 			else
 			{
-				strcpy(gameMessage, "Invalid move!");
+				/*	Player is PC*/
+				/*	Sleep for a while so that output isn't too fast'*/
+				sleepTime = rand() % 3;
+				sleepTime++;
+				#ifdef _WIN32
+					Sleep(1000 * sleepTime)
+				#else
+					sleep(sleepTime);
+				#endif
+				playerPC = availableOptions(playBoard, currentPlayer.token);
+				if (playerPC.available == 0)
+				{
+					/*	PC skips a turn*/
+					playLoop = false;
+				}
+				else
+				{
+					/*	playBoard[currentPlayer.location[0]][currentPlayer.location[1]] = ' ';*/
+					memcpy(currentPlayer.location, playerPC.location, sizeof(currentPlayer.location));
+					playBoard[currentPlayer.location[0]][currentPlayer.location[1]] = currentPlayer.token;
+					countFlip = changeBoard(playBoard, currentPlayer.token, currentPlayer.location);
+					memcpy(actualBoard, playBoard, sizeof (char) * BS * BS);
+					playLoop = false;
+				}
 			}
-			
 		}
 	}
 	countScore(player1.token, actualBoard, &player1.score);
@@ -619,6 +687,7 @@ int main()
 	/*	Winner*/
 	struct player winner;
 	gameLoop = true;
+	autoSkip = false;
 	initscr();
 	clrscr();
 	while (gameLoop)
