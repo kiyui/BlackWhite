@@ -599,13 +599,15 @@ struct player playGame()
 	struct availableMove returnOption;
 	struct availableMove playerPC;
 	player1.token = '@';
-    player2.token = 'O';
+    	player2.token = 'O';
 	player1.score = 0;
 	player2.score = 0;
 	player1.location[0] = 0;
 	player1.location[1] = 0;
 	player2.location[0] = 0;
 	player2.location[1] = 0;
+	player1.isPC = false;
+	player2.isPC = false;
 	strcpy(nameMessage, "Please input player names:");
 	while (nameQuery)
 	{
@@ -761,7 +763,7 @@ struct player playGame()
 				sleepTime = rand() % 3;
 				sleepTime++;
 				#ifdef _WIN32
-					Sleep(1000 * sleepTime)
+					Sleep(1000 * sleepTime);
 				#else
 					sleep(sleepTime);
 				#endif
