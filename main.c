@@ -1,4 +1,3 @@
-/*Now on AI branch, will allow the user to challenge a PC*/
 #include<stdio.h>
 #include<stdlib.h>
 #include<stdbool.h>
@@ -32,6 +31,10 @@ void showOptions()
 {
 	printw("\nOptions:");
 	printw("\nP - Play Black White.");
+	printw("\nV - View High Score.");
+	printw("\nS - Settings");
+	printw("\nH - Help");
+	printw("\nA - About BlackWhite");
 	printw("\nQ - Quit program.");
 	printw("\nSelection: ");
 }
@@ -70,6 +73,130 @@ void printBoard(char userBoard[BS][BS])
 		printw("\n");
 	}
 }
+
+void helpMenu()
+{
+	
+	bool helpLoop = true;
+	char userOption;
+	char tutorialBoard[BS][BS];
+	int x, y;
+	clearBoard(tutorialBoard);
+	while (helpLoop)
+	{
+		clrscr();
+		printw("BlackWhite help menu.\n");
+		printw("H - How to play.\n");
+		printw("T - View tutorial\n");
+		printw("C - Cheat-sheet\n");
+		printw("Q - Return to main menu.\n");
+		printw("Selection: \n");
+		refresh();
+		userOption = getch();
+		if (userOption == 'h' || userOption == 'H')
+		{
+			clrscr();
+			printw("Playing BlackWhite.\n");
+			printw("######\n");
+			printw("Game objective:\n");
+			printw("######\n");
+			printw("The goal of the game is to obtain as many tokens as possible.\n");
+			printw("This is accomplished by flipping the opponents tokens.\n");
+			printw("The game ends when both players have no more remaining moves\n");
+			printw("or when the board is full.\n");
+			printw("######");
+			printw("How to play:\n");
+			printw("######");
+			printw("To navigate the cursor (X), use the keys: w,  a,  s,  d\n");
+			printw("Pressing x comfirms the location to set the token.\n");
+			printw("All the opponents tokens between any of your tokens\n");
+			printw("in any direction will become your tokens.\n");
+			printw("When you have no more moves left, press c to skip a turn.\n");
+			printw("A player can only skip a turn if no moves remain.\n");
+			printw("Optionally, auto-skip can be configured in the settings menu.\n");
+			printw("\nPress any key to continue.\n");
+			refresh();
+			getch();
+		}
+		else if (userOption == 't' || userOption == 'T')
+		{
+			clrscr();
+			printw("Welcome to the BlackWhite tutorial!\n");
+			printw("Below is a starting board. \n");
+			tutorialBoard[3][4] = '@';
+			tutorialBoard[4][3] = '@';
+			tutorialBoard[3][3] = 'O';
+			tutorialBoard[4][4] = 'O';
+			printBoard(tutorialBoard);
+			printw("\nWatch as Player 1 (@) sets the first token.");
+			printw("\nPress any key to continue.\n");
+			refresh();
+			getch();
+			clrscr();
+			printw("Player 1 has made a move, flipping one token!\n");
+			tutorialBoard[3][2] = '@';
+			tutorialBoard[3][3] = '@';
+			printBoard(tutorialBoard);
+			printw("\nNow watch Player 2 (O) set a token.");
+			printw("\nPress any key to continue.\n");
+			refresh();
+			getch();
+			clrscr();
+			printw("Player 2 has made a move!\n");
+			tutorialBoard[2][2] = 'O';
+			tutorialBoard[3][3] = 'O';
+			printBoard(tutorialBoard);
+			printw("\nFlips work in all directions, only constrained by the board");
+			printw("\nand by the next token. To set a token, a player must make at");
+			printw("\nleast one flip.");
+			printw("\nIn some cases, a player has to skip because no flips can be made.");
+			printw("\nPress any key to continue.\n");
+			refresh();
+			getch();
+			clrscr();
+			clearBoard(tutorialBoard);
+			printw("Here is an example in which Player 1 (@) cannot make a move.\n");
+			for (x = 0; x < BS; x++)
+			{
+				for (y = 0; y < 4; y++)
+				{
+					tutorialBoard[x][y] = 'O';
+				}
+			}
+			for (y = 0; y < BS; y++)
+			{
+				tutorialBoard[0][y] = 'O';
+			}
+			tutorialBoard[4][4] = '@';
+			tutorialBoard[0][7] = '@';
+			printBoard(tutorialBoard);
+			printw("\nThat's the end of this tutorial!");
+			printw("\nSimply playing the game will help better");
+			printw("\nthan going through this boring tutorial.");
+			printw("\nWhat are you waiting for? Get playing!");
+			printw("\nPress any key to continue.\n");
+			refresh();
+			getch();
+		}
+		else if (userOption == 'c' || userOption == 'C')
+		{
+			clrscr();
+			printw("BlackWhite Cheat-sheet:\n");
+			printw("Fighting against PC:\nName either player PC.\n");
+			printw("Force setting a token:\nPress '='.\n");
+			printw("Get a hint to set token:\nPress '-'\n");
+			printw("\nPress any key to continue.\n");
+			refresh();
+			getch();
+		}
+		else if (userOption == 'q' || userOption == 'Q')
+		{
+			clrscr();
+			helpLoop = false;
+		}
+	}
+}
+
 
 void countScore(char playerToken, char userBoard[BS][BS], int *userScore)
 {
@@ -714,6 +841,10 @@ int main()
 			printw("\nThanks for playing BlackWhite, bye!\nPress any key to return.");
 			gameLoop = false;
 			quit();
+		}
+		else if (userOption == 'h' || userOption == 'H')
+		{
+			helpMenu();
 		}
 		else
 		{
