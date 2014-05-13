@@ -32,7 +32,6 @@ void showOptions()
 	printw("\nOptions:");
 	printw("\nP - Play Black White.");
 	printw("\nV - View High Score.");
-	printw("\nS - Settings");
 	printw("\nH - Help");
 	printw("\nA - About BlackWhite");
 	printw("\nQ - Quit program.");
@@ -104,9 +103,9 @@ void helpMenu()
 			printw("This is accomplished by flipping the opponents tokens.\n");
 			printw("The game ends when both players have no more remaining moves\n");
 			printw("or when the board is full.\n");
-			printw("######");
+			printw("######\n");
 			printw("How to play:\n");
-			printw("######");
+			printw("######\n");
 			printw("To navigate the cursor (X), use the keys: w,  a,  s,  d\n");
 			printw("Pressing x comfirms the location to set the token.\n");
 			printw("All the opponents tokens between any of your tokens\n");
@@ -183,8 +182,7 @@ void helpMenu()
 			clrscr();
 			printw("BlackWhite Cheat-sheet:\n");
 			printw("Fighting against PC:\nName either player PC.\n");
-			printw("Force setting a token:\nPress '='.\n");
-			printw("Get a hint to set token:\nPress '-'\n");
+			printw("Get a hint to set token:\nPress '='\n");
 			printw("\nPress any key to continue.\n");
 			refresh();
 			getch();
@@ -607,8 +605,8 @@ struct player playGame()
 	player2.location[0] = 0;
 	player2.location[1] = 0;
 	/*	Going to change this?*/
-	player1.isPC = true;
-	player2.isPC = true;
+	player1.isPC = false;
+	player2.isPC = false;
 	strcpy(nameMessage, "Please input player names:");
 	while (nameQuery)
 	{
@@ -720,6 +718,12 @@ struct player playGame()
 					}
 					else
 						playLoop = false;
+				}
+				else if (playerInput == '=')
+				{
+					playBoard[currentPlayer.location[0]][currentPlayer.location[1]] = ' ';
+					returnOption = availableOptions(playBoard, currentPlayer.token);
+					memcpy(currentPlayer.location, returnOption.location, sizeof(currentPlayer.location));
 				}
 				else if (playerInput == 'x')
 				{
