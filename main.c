@@ -4,13 +4,14 @@
 #include<string.h>
 #include<curses.h>
 #include<time.h>
+#include<sys/stat.h>
 #ifdef _WIN32
 	#include <windows.h>
 #else
 	#include <unistd.h>
 #endif
 #define BS 8
-bool autoSkip;
+char fileHighScore[14];
 struct player
 {
 	char name[32];
@@ -195,6 +196,33 @@ void helpMenu()
 	}
 }
 
+void scoreFileTest()
+{
+	FILE *highScore;
+	struct stat fileTest;
+	int exists;
+	exists = stat(fileHighScore, &fileTest);
+	if (exists < 0)
+	{
+		highScore = fopen(fileHighScore, "w");
+	}
+}
+
+void viewHighScore()
+{
+	FILE *highScore;
+	char printHighScore[120];
+	scoreFileTest();
+	highScore = fopen(fileHighScore, "r");
+	clrscr();
+	printw("BlackWhite high score log:\n");
+	while (fgets(printHighScore, 120, highScore) != NULL)
+		printw("%s", printHighScore);
+	fclose(highScore);
+	printw("\nPress any key to continue.\n");
+	refresh();
+	getch();
+}
 
 void countScore(char playerToken, char userBoard[BS][BS], int *userScore)
 {
@@ -251,10 +279,7 @@ void drawBoard(char userBoard[BS][BS], struct player player1, struct player play
 		printw("|");
 		printw("\n");
 	}
-	if (autoSkip == false)
-		printw("\nw: Up\ts: Down\na: Left\td: Right\nx: Confirm\nc: Skip\nQ: Quit\n");
-	else
-		printw("\nw: Up\ts: Down\na: Left\td: Right\nx: Confirm\nQ: Quit\n");
+	printw("\nw: Up\ts: Down\na: Left\td: Right\nx: Confirm\nc: Skip\nQ: Quit\n");
 	refresh();
 }
 
@@ -821,9 +846,9 @@ int main()
 	/*	Winner*/
 	struct player winner;
 	gameLoop = true;
-	autoSkip = false;
 	initscr();
 	clrscr();
+	strcpy(fileHighScore, "Highscore.txt");
 	while (gameLoop)
 	{
 		printw("Black White");
@@ -852,6 +877,10 @@ int main()
 		else if (userOption == 'h' || userOption == 'H')
 		{
 			helpMenu();
+		}
+		else if (userOption == 'v' || userOption == 'V')
+		{
+			viewHighScore();
 		}
 		else
 		{
