@@ -121,6 +121,7 @@ void helpMenu()
 		else if (userOption == 't' || userOption == 'T')
 		{
 			clrscr();
+			clearBoard(tutorialBoard);
 			printw("Welcome to the BlackWhite tutorial!\n");
 			printw("Below is a starting board. \n");
 			tutorialBoard[3][4] = '@';
@@ -182,8 +183,8 @@ void helpMenu()
 		{
 			clrscr();
 			printw("BlackWhite Cheat-sheet:\n");
-			printw("Fighting against PC:\nName either player PC.\n");
-			printw("Get a hint to set token:\nPress '='\n");
+			printw("#1\nFighting against PC:\nName either player PC.\n");
+			printw("#2\nGet a hint to set token:\nPress '='\n");
 			printw("\nPress any key to continue.\n");
 			refresh();
 			getch();
@@ -881,6 +882,11 @@ int main()
 		else if (userOption == 'v' || userOption == 'V')
 		{
 			viewHighScore();
+		}
+		else if (userOption == 'a' || userOption == 'A')
+		{
+			clrscr();
+			printw("BlackWhite - Copyright Timothy Kiyui 2014");
 		}
 		else
 		{
