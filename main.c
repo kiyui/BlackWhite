@@ -280,7 +280,7 @@ void drawBoard(char userBoard[BS][BS], struct player player1, struct player play
 		printw("|");
 		printw("\n");
 	}
-	printw("\nw: Up\ts: Down\na: Left\td: Right\nx: Confirm\nc: Skip\nQ: Quit\n");
+	printw("\nw: Up\ts: Down\na: Left\td: Right\nx: Confirm\nQ: Quit\n");
 	refresh();
 }
 
@@ -707,7 +707,7 @@ struct player playGame()
 		while (playLoop)
 		{
 			memcpy(playBoard, actualBoard, sizeof (char) * BS * BS);
-			/*	PC does not need a cursor*/
+			/* PC does not need a cursor*/
 			if (currentPlayer.isPC == false)
 				playBoard[currentPlayer.location[0]][currentPlayer.location[1]] = 'X';
 			drawBoard(playBoard, player1, player2, &gameMessage, &countFlip);
@@ -719,86 +719,69 @@ struct player playGame()
 				returnOption = availableOptions(playBoard, currentPlayer.token);
 				if (returnOption.available > 0)
 				{
-					playBoard[currentPlayer.location[0]][currentPlayer.location[1]] = currentPlayer.token;
-				}
-				else
-					playLoop = false;
-				/*	Player input*/
-				playerInput = getch();
-				if (playerInput == 'w' && currentPlayer.location[0] > 0)
-				{
-					currentPlayer.location[0]--;
-				}
-				else if (playerInput == 'a' && currentPlayer.location[1] > 0)
-				{
-					currentPlayer.location[1]--;
-				}
-				else if (playerInput == 'd' && currentPlayer.location[1] < 7)
-				{
-					currentPlayer.location[1]++;
-				}
-				else if (playerInput == 's' && currentPlayer.location[0] < 7)
-				{
-					currentPlayer.location[0]++;
-				}
-				else if (playerInput == 'c')
-				{
-					/*	Test if player can skip*/
-					playBoard[currentPlayer.location[0]][currentPlayer.location[1]] = ' ';
-					returnOption = availableOptions(playBoard, currentPlayer.token);
-					/*	printw("\nScore:%i", returnOption.score);*/
-					/*	printw("\nAvailable:%i", returnOption.available);*/
-					/*	refresh();*/
-					/*	getch();*/
-					if (returnOption.available > 0)
+					playBoard[currentPlayer.location[0]][currentPlayer.location[1]] = 'X';
+					/*	Player input*/
+					playerInput = getch();
+					if (playerInput == 'w' && currentPlayer.location[0] > 0)
 					{
-						sprintf(gameMessage, "Player %s still has available moves!", currentPlayer.name);
-						playBoard[currentPlayer.location[0]][currentPlayer.location[1]] = currentPlayer.token;
+						currentPlayer.location[0]--;
 					}
-					else
-						playLoop = false;
-				}
-				else if (playerInput == '=')
-				{
-					playBoard[currentPlayer.location[0]][currentPlayer.location[1]] = ' ';
-					returnOption = availableOptions(playBoard, currentPlayer.token);
-					memcpy(currentPlayer.location, returnOption.location, sizeof(currentPlayer.location));
-				}
-				else if (playerInput == 'x')
-				{
-					/*	Test if user is setting token on top of another token*/
-					if (actualBoard[currentPlayer.location[0]][currentPlayer.location[1]] == '@' || actualBoard[currentPlayer.location[0]][currentPlayer.location[1]] == 'O')
+					else if (playerInput == 'a' && currentPlayer.location[1] > 0)
 					{
-						strcpy(gameMessage, "Cannot set token here!");
+						currentPlayer.location[1]--;
 					}
-					else
+					else if (playerInput == 'd' && currentPlayer.location[1] < 7)
 					{
-						/*	Make changes to play board to test if the user made any flips*/
-						playBoard[currentPlayer.location[0]][currentPlayer.location[1]] = currentPlayer.token;
-						countFlip = changeBoard(playBoard, currentPlayer.token, currentPlayer.location);
-						/*	The user must have flips otherwise the move is considered invalid*/
-						if (countFlip < 1)
+						currentPlayer.location[1]++;
+					}
+					else if (playerInput == 's' && currentPlayer.location[0] < 7)
+					{
+						currentPlayer.location[0]++;
+					}
+					else if (playerInput == '=')
+					{
+						playBoard[currentPlayer.location[0]][currentPlayer.location[1]] = ' ';
+						returnOption = availableOptions(playBoard, currentPlayer.token);
+						memcpy(currentPlayer.location, returnOption.location, sizeof(currentPlayer.location));
+					}
+					else if (playerInput == 'x')
+					{
+						/*	Test if user is setting token on top of another token*/
+						if (actualBoard[currentPlayer.location[0]][currentPlayer.location[1]] == '@' || actualBoard[currentPlayer.location[0]][currentPlayer.location[1]] == 'O')
 						{
 							strcpy(gameMessage, "Cannot set token here!");
-							memcpy(playBoard, actualBoard, sizeof (char) * BS * BS);
 						}
 						else
 						{
-							playLoop = false;
-							memcpy(actualBoard, playBoard, sizeof (char) * BS * BS);
+							/*	Make changes to play board to test if the user made any flips*/
+							playBoard[currentPlayer.location[0]][currentPlayer.location[1]] = currentPlayer.token;
+							countFlip = changeBoard(playBoard, currentPlayer.token, currentPlayer.location);
+							/*	The user must have flips otherwise the move is considered invalid*/
+							if (countFlip < 1)
+							{
+								strcpy(gameMessage, "Cannot set token here!");
+								memcpy(playBoard, actualBoard, sizeof (char) * BS * BS);
+							}
+							else
+							{
+								playLoop = false;
+								memcpy(actualBoard, playBoard, sizeof (char) * BS * BS);
+							}
 						}
 					}
-				}
-				else if (playerInput == 'Q')
-				{
-					/*	Force quits the game*/
-					playLoop=false;
-					gameLoop=false;
+					else if (playerInput == 'Q')
+					{
+						/*	Force quits the game*/
+						playLoop=false;
+						gameLoop=false;
+					}
+					else
+					{
+						strcpy(gameMessage, "Invalid move!");
+					}
 				}
 				else
-				{
-					strcpy(gameMessage, "Invalid move!");
-				}
+					playLoop = false;
 			}
 			else
 			{
