@@ -615,6 +615,11 @@ struct player playGame()
 	int sleepTime;
 	/*	Loops*/
 	bool gameLoop = true, playLoop = true, nameQuery = true;
+	/*	Highscore*/
+	FILE *highScore;
+	char highScoreText[240];
+	char* currentTime;
+	time_t getTime;
 	/*	Players*/
 	int playerTurn = 2;
 	struct player player1;
@@ -630,7 +635,6 @@ struct player playGame()
 	player1.location[1] = 0;
 	player2.location[0] = 0;
 	player2.location[1] = 0;
-	/*	Going to change this?*/
 	player1.isPC = false;
 	player2.isPC = false;
 	strcpy(nameMessage, "Please input player names:");
@@ -710,6 +714,15 @@ struct player playGame()
 			if (currentPlayer.isPC == false)
 			{
 				/*	Player is not PC*/
+				/*	Test for available moves*/
+				playBoard[currentPlayer.location[0]][currentPlayer.location[1]] = ' ';
+				returnOption = availableOptions(playBoard, currentPlayer.token);
+				if (returnOption.available > 0)
+				{
+					playBoard[currentPlayer.location[0]][currentPlayer.location[1]] = currentPlayer.token;
+				}
+				else
+					playLoop = false;
 				/*	Player input*/
 				playerInput = getch();
 				if (playerInput == 'w' && currentPlayer.location[0] > 0)
@@ -818,6 +831,13 @@ struct player playGame()
 	}
 	countScore(player1.token, actualBoard, &player1.score);
 	countScore(player2.token, actualBoard, &player2.score);
+	scoreFileTest();
+	getTime = time(NULL);
+	currentTime = ctime(&getTime);
+	sprintf(highScoreText, "\n%s%s : %i\n%s : %i\n", currentTime, player1.name, player1.score, player2.name, player2.score);
+	highScore = fopen(fileHighScore, "a");
+	fprintf(highScore, highScoreText);
+	fclose(highScore);
 	if (player1.score > player2.score)
 	{
 		return player1;
