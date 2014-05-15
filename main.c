@@ -12,6 +12,8 @@
 #endif
 #define BS 8
 char fileHighScore[14];
+
+/*	Player structure*/
 struct player
 {
 	char name[32];
@@ -21,6 +23,7 @@ struct player
 	bool isPC;
 };
 
+/*	Used to determine to moves available*/
 struct availableMove
 {
 	int location[2];
@@ -28,30 +31,22 @@ struct availableMove
 	int available;
 };
 
-void showOptions()
+/*	Press to continue*/
+void pressContinue()
 {
-	printw("\nOptions:");
-	printw("\nP - Play Black White.");
-	printw("\nV - View High Score.");
-	printw("\nH - Help");
-	printw("\nA - About BlackWhite");
-	printw("\nQ - Quit program.");
-	printw("\nSelection: ");
+	printw("\nPress any key to continue.\n");
+	refresh();
+	getch();
 }
 
+/*	Clears the screen*/
 void clrscr()
 {
 	clear();
 	refresh();
 }
 
-void quit()
-{
-	refresh();
-	getch();
-	endwin();
-}
-
+/*	Clears the game board by setting spaces at each location*/
 void clearBoard(char userBoard[BS][BS])
 {
 	int loopXVar, loopYVar;
@@ -60,6 +55,7 @@ void clearBoard(char userBoard[BS][BS])
 			userBoard[loopXVar][loopYVar] = ' ';
 }
 
+/* Prints the board*/
 void printBoard(char userBoard[BS][BS])
 {
 	int loopXVar, loopYVar;
@@ -114,9 +110,7 @@ void helpMenu()
 			printw("When you have no more moves left, press c to skip a turn.\n");
 			printw("A player can only skip a turn if no moves remain.\n");
 			printw("Optionally, auto-skip can be configured in the settings menu.\n");
-			printw("\nPress any key to continue.\n");
-			refresh();
-			getch();
+			pressContinue();
 		}
 		else if (userOption == 't' || userOption == 'T')
 		{
@@ -130,18 +124,14 @@ void helpMenu()
 			tutorialBoard[4][4] = 'O';
 			printBoard(tutorialBoard);
 			printw("\nWatch as Player 1 (@) sets the first token.");
-			printw("\nPress any key to continue.\n");
-			refresh();
-			getch();
+			pressContinue();
 			clrscr();
 			printw("Player 1 has made a move, flipping one token!\n");
 			tutorialBoard[3][2] = '@';
 			tutorialBoard[3][3] = '@';
 			printBoard(tutorialBoard);
 			printw("\nNow watch Player 2 (O) set a token.");
-			printw("\nPress any key to continue.\n");
-			refresh();
-			getch();
+			pressContinue();
 			clrscr();
 			printw("Player 2 has made a move!\n");
 			tutorialBoard[2][2] = 'O';
@@ -151,9 +141,7 @@ void helpMenu()
 			printw("\nand by the next token. To set a token, a player must make at");
 			printw("\nleast one flip.");
 			printw("\nIn some cases, a player has to skip because no flips can be made.");
-			printw("\nPress any key to continue.\n");
-			refresh();
-			getch();
+			pressContinue();
 			clrscr();
 			clearBoard(tutorialBoard);
 			printw("Here is an example in which Player 1 (@) cannot make a move.\n");
@@ -175,9 +163,7 @@ void helpMenu()
 			printw("\nSimply playing the game will help better");
 			printw("\nthan going through this boring tutorial.");
 			printw("\nWhat are you waiting for? Get playing!");
-			printw("\nPress any key to continue.\n");
-			refresh();
-			getch();
+			pressContinue();
 		}
 		else if (userOption == 'c' || userOption == 'C')
 		{
@@ -185,9 +171,7 @@ void helpMenu()
 			printw("BlackWhite Cheat-sheet:\n");
 			printw("#1\nFighting against PC:\nName either player PC.\n");
 			printw("#2\nGet a hint to set token:\nPress '='\n");
-			printw("\nPress any key to continue.\n");
-			refresh();
-			getch();
+			pressContinue();
 		}
 		else if (userOption == 'q' || userOption == 'Q')
 		{
@@ -220,9 +204,7 @@ void viewHighScore()
 	while (fgets(printHighScore, 120, highScore) != NULL)
 		printw("%s", printHighScore);
 	fclose(highScore);
-	printw("\nPress any key to continue.\n");
-	refresh();
-	getch();
+	pressContinue();
 }
 
 void countScore(char playerToken, char userBoard[BS][BS], int *userScore)
@@ -271,15 +253,7 @@ void drawBoard(char userBoard[BS][BS], struct player player1, struct player play
 	{
 		printw("\n%i flip made.\n", *countFlip);
 	}
-	for (loopXVar = 0; loopXVar < BS; loopXVar++)
-	{
-		for (loopYVar = 0; loopYVar < BS; loopYVar++)
-		{
-			printw("|%c", userBoard[loopXVar][loopYVar]);
-		}
-		printw("|");
-		printw("\n");
-	}
+	printBoard(userBoard);
 	printw("\nw: Up\ts: Down\na: Left\td: Right\nx: Confirm\nQ: Quit\n");
 	refresh();
 }
@@ -550,7 +524,6 @@ int changeBoard(char actualBoard[BS][BS], char playerToken, int location[2])
 	}
 	
 	/*	We only make changes to the original board if there actually were changes made*/
-	/*	count = 100;*/
 	return count;
 }
 
@@ -570,7 +543,6 @@ struct availableMove availableOptions(char actualBoard[BS][BS], char playerToken
 		{
 			
 			memcpy(testBoard, actualBoard, sizeof (char) * BS * BS);
-			//printBoard(testBoard);
 			location[0] = x;
 			location[1] = y;
 			if (testBoard[location[0]][location[1]] == ' ')
@@ -626,9 +598,11 @@ struct player playGame()
 	struct player player2;
 	struct player currentPlayer;
 	struct availableMove returnOption;
+	struct availableMove player1Moves;	
+	struct availableMove player2Moves;
 	struct availableMove playerPC;
 	player1.token = '@';
-    player2.token = 'O';
+	player2.token = 'O';
 	player1.score = 0;
 	player2.score = 0;
 	player1.location[0] = 0;
@@ -691,13 +665,14 @@ struct player playGame()
 		}
 		countScore(player1.token, actualBoard, &player1.score);
 		countScore(player2.token, actualBoard, &player2.score);
-		if ((player1.score + player2.score) == (BS*BS) || player1.score == 0 || player2.score == 0)
+		player1Moves = availableOptions(playBoard, player1.token);
+		player2Moves = availableOptions(playBoard, player2.token);
+		if ((player1.score + player2.score) == (BS*BS) || player1.score == 0 || player2.score == 0 || (player1Moves.available == 0 && player2Moves.available == 0))
 		{
 			gameLoop = false;
 			drawBoard(playBoard, player1, player2, &gameMessage, &countFlip);
-			printw("\nGame over!\nPress any key to continue.\n");
-			refresh();
-			getch();
+			printw("\nGame over!\n");
+			pressContinue();
 		}
 		else
 		{
@@ -857,7 +832,7 @@ int main()
 	{
 		printw("Black White");
 		printw("\n%s", gameMessage);
-		showOptions();
+		printw("\nOptions:\nP - Play Black White.\nV - View High Score.\nH - Help\nA - About BlackWhite\nQ - Quit program.\nSelection: ");
 		userOption = getch();
 		if (userOption == 'p' || userOption == 'P')
 		{
@@ -874,9 +849,10 @@ int main()
 		}
 		else if (userOption == 'q' || userOption == 'Q')
 		{
-			printw("\nThanks for playing BlackWhite, bye!\nPress any key to return.");
+			printw("\nThanks for playing BlackWhite, bye!\n");
 			gameLoop = false;
-			quit();
+			pressContinue();
+			endwin();
 		}
 		else if (userOption == 'h' || userOption == 'H')
 		{
@@ -890,6 +866,7 @@ int main()
 		{
 			clrscr();
 			printw("BlackWhite - Copyright Timothy Kiyui 2014");
+			pressContinue();
 		}
 		else
 		{
