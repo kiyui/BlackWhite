@@ -184,9 +184,14 @@ void helpMenu()
 void scoreFileTest()
 {
 	FILE *highScore;
-	struct stat fileTest;
 	int exists;
-	exists = stat(fileHighScore, &fileTest);
+	#ifdef _WIN32
+		struct _stat fileTest;
+		exists = _stat(fileHighScore, &fileTest);
+	#else
+		struct stat fileTest;
+		exists = stat(fileHighScore, &fileTest);
+	#endif
 	if (exists < 0)
 	{
 		highScore = fopen(fileHighScore, "w");
