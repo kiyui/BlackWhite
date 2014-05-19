@@ -198,11 +198,12 @@ void scoreFileTest()
 	}
 }
 
-void viewHighScore()
+void viewHighScore(bool displayLast)
 {
 	FILE *highScore;
 	char printHighScore[120];
 	char userInput;
+	int lineCount = 0, limitCount = 0;
 	scoreFileTest();
 	highScore = fopen(fileHighScore, "r");
 	clrscr();
@@ -215,12 +216,23 @@ void viewHighScore()
 		#else
 			usleep(70000);
 		#endif
+		lineCount++;
 		if (!strcmp(printHighScore, "\n"))
 			refresh();
 	}
+	lineCount -= 3;
+	if (displayLast)
+	{
+		while (fgets(printHighScore, 120, highScore) != NULL)
+		{
+			limitCount++;
+			if (limitCount >= lineCount)
+				printw("%s", printHighScore);
+		}
+	}
 	fclose(highScore);
-	printw("\nTo view full highscore, please refer to Highscore.txt\nPress any key to return to main menu.");
-	getch();
+	printw("\nTo view full highscore, please refer to Highscore.txt.");
+	pressContinue();
 	clrscr();
 }
 
@@ -878,7 +890,7 @@ int main()
 		}
 		else if (userOption == 'v' || userOption == 'V')
 		{
-			viewHighScore();
+			viewHighScore(false);
 		}
 		else if (userOption == 'a' || userOption == 'A')
 		{
