@@ -202,14 +202,26 @@ void viewHighScore()
 {
 	FILE *highScore;
 	char printHighScore[120];
+	char userInput;
 	scoreFileTest();
 	highScore = fopen(fileHighScore, "r");
 	clrscr();
 	printw("BlackWhite high score log:\n");
 	while (fgets(printHighScore, 120, highScore) != NULL)
+	{
 		printw("%s", printHighScore);
+		#ifdef _WIN32
+			Sleep(70);
+		#else
+			usleep(70000);
+		#endif
+		if (!strcmp(printHighScore, "\n"))
+			refresh();
+	}
 	fclose(highScore);
-	pressContinue();
+	printw("\nTo view full highscore, please refer to Highscore.txt\nPress any key to return to main menu.");
+	getch();
+	clrscr();
 }
 
 void countScore(char playerToken, char userBoard[BS][BS], int *userScore)
@@ -831,6 +843,7 @@ int main()
 	struct player winner;
 	gameLoop = true;
 	initscr();
+	scrollok(stdscr, TRUE);
 	clrscr();
 	strcpy(fileHighScore, "Highscore.txt");
 	while (gameLoop)
