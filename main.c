@@ -206,23 +206,33 @@ void viewHighScore(bool displayLast)
 	int lineCount = 0, limitCount = 0;
 	scoreFileTest();
 	highScore = fopen(fileHighScore, "r");
-	clrscr();
-	printw("BlackWhite high score log:\n");
+	if (!displayLast)
+	{
+		clrscr();
+		printw("BlackWhite high score log:\n");
+	}
 	while (fgets(printHighScore, 120, highScore) != NULL)
 	{
-		printw("%s", printHighScore);
-		#ifdef _WIN32
-			Sleep(70);
-		#else
-			usleep(70000);
-		#endif
-		lineCount++;
-		if (!strcmp(printHighScore, "\n"))
-			refresh();
+		if (!displayLast)
+		{
+			printw("%s", printHighScore);
+			#ifdef _WIN32
+				Sleep(70);
+			#else
+				usleep(70000);
+			#endif
+			if (!strcmp(printHighScore, "\n"))
+				refresh();
+		}
+		else
+			lineCount++;
 	}
+	fclose(highScore);
+	highScore = fopen(fileHighScore, "r");
 	lineCount -= 3;
 	if (displayLast)
 	{
+		printw("\nPrevious score:");
 		while (fgets(printHighScore, 120, highScore) != NULL)
 		{
 			limitCount++;
@@ -230,10 +240,13 @@ void viewHighScore(bool displayLast)
 				printw("%s", printHighScore);
 		}
 	}
-	fclose(highScore);
-	printw("\nTo view full highscore, please refer to Highscore.txt.");
-	pressContinue();
-	clrscr();
+	else
+	{
+		pressContinue();
+		printw("\nTo view full highscore, please refer to Highscore.txt.");
+		clrscr();
+	}
+	
 }
 
 void countScore(char playerToken, char userBoard[BS][BS], int *userScore)
@@ -860,8 +873,9 @@ int main()
 	strcpy(fileHighScore, "Highscore.txt");
 	while (gameLoop)
 	{
-		printw("Black White");
+		printw("#######################\nBlack White - (Reversi)\n#######################");
 		printw("\n%s", gameMessage);
+		viewHighScore(true);
 		printw("\nOptions:\nP - Play Black White.\nV - View High Score.\nH - Help\nA - About BlackWhite\nQ - Quit program.\nSelection: ");
 		userOption = getch();
 		if (userOption == 'p' || userOption == 'P')
