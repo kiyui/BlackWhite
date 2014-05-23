@@ -93,16 +93,16 @@ void helpMenu()
 		{
 			clrscr();
 			printw("Playing BlackWhite.\n");
-			printw("######\n");
+			printw("####################\n");
 			printw("Game objective:\n");
-			printw("######\n");
+			printw("####################\n");
 			printw("The goal of the game is to obtain as many tokens as possible.\n");
 			printw("This is accomplished by flipping the opponents tokens.\n");
 			printw("The game ends when both players have no more remaining moves\n");
 			printw("or when the board is full.\n");
-			printw("######\n");
+			printw("####################\n");
 			printw("How to play:\n");
-			printw("######\n");
+			printw("####################\n");
 			printw("To navigate the cursor (X), use the keys: w,  a,  s,  d\n");
 			printw("Pressing x comfirms the location to set the token.\n");
 			printw("All the opponents tokens between any of your tokens\n");
@@ -202,7 +202,6 @@ void viewHighScore(bool displayLast)
 {
 	FILE *highScore;
 	char printHighScore[120];
-	char userInput;
 	int lineCount = 0, limitCount = 0;
 	scoreFileTest();
 	highScore = fopen(fileHighScore, "r");
@@ -819,7 +818,6 @@ struct player playGame()
 				}
 				else
 				{
-					/*	playBoard[currentPlayer.location[0]][currentPlayer.location[1]] = ' ';*/
 					memcpy(currentPlayer.location, playerPC.location, sizeof(currentPlayer.location));
 					playBoard[currentPlayer.location[0]][currentPlayer.location[1]] = currentPlayer.token;
 					countFlip = changeBoard(playBoard, currentPlayer.token, currentPlayer.location);
@@ -909,7 +907,18 @@ int main()
 		else if (userOption == 'a' || userOption == 'A')
 		{
 			clrscr();
-			printw("BlackWhite - Copyright Timothy Kiyui 2014");
+			printw("About BlackWhite:\n");
+			printw("BlackWhite - Copyright Timothy Kiyui 2014\n");
+			printw("BlackWhite is free software: you can redistribute it and/or modify\n");
+			printw("it under the terms of the GNU General Public License as published by\n");
+			printw("the Free Software Foundation, either version 3 of the License, or\n");
+    		printw("(at your option) any later version.\n");
+    		printw("This program is distributed in the hope that it will be useful,\n");
+    		printw("but WITHOUT ANY WARRANTY; without even the implied warranty of\n");
+    		printw("MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n");
+    		printw("GNU General Public License for more details.\n");
+    		printw("You should have received a copy of the GNU General Public License\n");
+    		printw("along with this program.  If not, see <http://www.gnu.org/licenses/>.\n");
 			pressContinue();
 		}
 		else
